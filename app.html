@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Criterio 10H</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Montserrat:wght@300;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --brand:#B4F04E;--bg:#050505;--card:#0D0D0D;--panel:#111;
+  --border:rgba(255,255,255,0.06);--muted:#6b7280;--text:#e5e7eb;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;overflow-x:hidden;min-height:100vh}
+button{cursor:pointer;font-family:inherit;border:none;outline:none}
+a{text-decoration:none}
+input{font-family:inherit;outline:none;border:none}
+
+/* ── VIEWS ── */
+#view-landing,#view-terminal,#view-preview{display:none}
+#view-landing.active,#view-terminal.active,#view-preview.active{display:flex}
+#view-landing{flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;position:relative;overflow:hidden}
+#view-terminal{flex-direction:column;min-height:100vh}
+#view-preview{flex-direction:column;min-height:100vh}
+
+/* ── LANDING ── */
+.landing-glow{position:absolute;top:30%;left:50%;transform:translateX(-50%);width:600px;height:600px;background:rgba(180,240,78,0.05);border-radius:50%;filter:blur(100px);pointer-events:none}
+.landing-inner{position:relative;z-index:1;text-align:center;display:flex;flex-direction:column;align-items:center;animation:fadeUp .8s ease}
+.logo-box{width:80px;height:80px;background:var(--brand);border-radius:2rem;display:flex;align-items:center;justify-content:center;box-shadow:0 0 50px rgba(180,240,78,0.4);margin-bottom:2rem}
+.logo-box svg{color:#000}
+h1.hero{font-size:clamp(2.5rem,8vw,4.5rem);font-weight:900;letter-spacing:-0.05em;margin-bottom:1rem}
+.hero-sub{color:var(--muted);font-size:1.1rem;max-width:440px;line-height:1.7;margin-bottom:2rem}
+.hero-sub strong{color:#fff}
+.cache-banner{display:flex;align-items:center;gap:1rem;background:rgba(180,240,78,0.08);border:1px solid rgba(180,240,78,0.25);border-radius:1.5rem;padding:1rem 1.5rem;margin-bottom:2rem;width:100%;max-width:480px}
+.cache-banner span{font-size:.875rem;color:var(--text);flex:1}
+.cache-banner strong{color:#fff}
+.btn-start{display:flex;align-items:center;gap:.75rem;background:var(--brand);color:#000;padding:1.25rem 2.5rem;border-radius:9999px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;font-size:.85rem;box-shadow:0 10px 40px rgba(180,240,78,.3);transition:all .2s}
+.btn-start:hover{background:#c6ff5c;transform:scale(1.04)}
+
+/* ── HEADER ── */
+.app-header{position:sticky;top:0;z-index:50;background:rgba(0,0,0,.85);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:.875rem 1.5rem;display:flex;justify-content:space-between;align-items:center}
+.header-brand{display:flex;align-items:center;gap:.75rem}
+.header-logo{width:40px;height:40px;background:var(--brand);border-radius:1rem;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(180,240,78,.3)}
+.header-logo svg{color:#000}
+.brand-name{font-size:1.125rem;font-weight:700;letter-spacing:-.05em;line-height:1}
+.brand-sub{font-size:.6rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.2em;margin-top:.25rem}
+.header-actions{display:flex;gap:.5rem;align-items:center}
+.search-box{display:flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:1rem;padding:.5rem 1rem}
+.search-box input{background:transparent;color:#fff;font-size:.875rem;width:140px}
+.search-box input::placeholder{color:var(--muted)}
+.btn-icon{padding:.75rem;border-radius:1rem;background:transparent;transition:background .2s;color:var(--muted)}
+.btn-icon:hover{background:rgba(255,255,255,.06);color:#fff}
+.btn-icon svg{display:block}
+.btn-preview{display:flex;align-items:center;gap:.5rem;padding:.625rem 1.5rem;border-radius:1rem;font-size:.625rem;font-weight:900;text-transform:uppercase;letter-spacing:.15em;transition:all .2s}
+.btn-preview.ready{background:var(--brand);color:#000}
+.btn-preview.ready:hover{background:#c6ff5c}
+.btn-preview.disabled{background:rgba(255,255,255,.08);color:var(--muted);cursor:not-allowed}
+
+/* ── PROGRESS ── */
+#progress-area{padding:1.5rem 1.5rem 0}
+.prog-label{display:flex;justify-content:space-between;font-size:.6rem;font-weight:900;text-transform:uppercase;color:var(--brand);margin-bottom:.75rem;letter-spacing:.2em}
+.prog-track{width:100%;height:8px;background:rgba(255,255,255,.04);border-radius:9999px;overflow:hidden;border:1px solid var(--border)}
+.prog-bar{height:100%;background:var(--brand);border-radius:9999px;transition:width .5s ease-out;box-shadow:0 0 15px rgba(180,240,78,.5);width:0%}
+.status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-top:1rem}
+.status-item{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.04);border-radius:1rem;padding:.5rem 1rem;border:1px solid var(--border)}
+.status-name{font-size:.625rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.1em}
+.status-tag{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;display:flex;align-items:center;gap:.25rem}
+.status-tag.loading{color:var(--brand)}
+.status-tag.done{color:#4ade80}
+.status-tag.error{color:#f87171}
+
+/* ── MAIN CONTENT ── */
+#main-content{max-width:64rem;margin:0 auto;padding:2rem 1.5rem}
+
+/* ── PANORAMA ── */
+.panorama-section{background:var(--panel);padding:2.5rem;border-radius:3.5rem;border:1px solid var(--border);margin-bottom:3rem}
+.section-title{font-size:1.5rem;font-weight:700;display:flex;align-items:center;gap:.75rem;margin-bottom:2rem}
+.section-title svg{color:var(--brand)}
+.panorama-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+.panorama-item{display:flex;gap:1rem;padding:1.25rem;background:rgba(255,255,255,.04);border-radius:1.5rem;border:1px solid var(--border)}
+.panorama-dot{width:6px;height:6px;border-radius:50%;background:var(--brand);flex-shrink:0;margin-top:.5rem}
+.panorama-item p{font-size:.875rem;color:#d1d5db;line-height:1.6;font-weight:500}
+
+/* ── BOOKMARKS ── */
+#bookmarks-section{margin-bottom:3rem;background:rgba(180,240,78,.04);border:1px solid rgba(180,240,78,.18);padding:2rem;border-radius:3rem;display:none}
+#bookmarks-section.has-items{display:block}
+.bookmarks-title{font-size:1rem;font-weight:700;display:flex;align-items:center;gap:.75rem;color:var(--brand);margin-bottom:1.5rem}
+.bookmark-list{display:flex;flex-direction:column;gap:.75rem}
+.bookmark-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;background:rgba(255,255,255,.05);border-radius:1rem;padding:.75rem 1.25rem}
+.bookmark-row span{font-size:.875rem;color:#e5e7eb;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bm-remove{background:none;color:var(--muted);padding:.25rem;border-radius:.5rem;transition:color .2s;display:flex;align-items:center}
+.bm-remove:hover{color:#f87171}
+
+/* ── TABS ── */
+#tabs-bar{display:flex;gap:.5rem;overflow-x:auto;padding:1rem 0 1.5rem;margin-bottom:3rem;position:sticky;top:72px;z-index:40;background:rgba(5,5,5,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+#tabs-bar::-webkit-scrollbar{display:none}
+.tab-btn{padding:.75rem 1.5rem;border-radius:1rem;font-size:.625rem;font-weight:900;text-transform:uppercase;letter-spacing:.15em;white-space:nowrap;background:rgba(255,255,255,.05);color:var(--muted);transition:all .2s;display:flex;align-items:center;gap:.4rem}
+.tab-btn:hover{color:#fff}
+.tab-btn.active{background:#fff;color:#000;box-shadow:0 4px 20px rgba(255,255,255,.1)}
+
+/* ── SECTIONS ── */
+.news-section{margin-bottom:6rem}
+.news-section-header{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem}
+.section-icon{padding:1rem;border-radius:1rem;display:flex;align-items:center;justify-content:center}
+.news-section-title{font-size:1.875rem;font-weight:700;text-transform:uppercase;letter-spacing:-.05em}
+.section-retry{margin-left:auto;display:flex;align-items:center;gap:.5rem;font-size:.75rem;font-weight:700;color:#9ca3af;background:rgba(255,255,255,.05);padding:.5rem 1rem;border-radius:1rem;transition:all .2s}
+.section-retry:hover{color:#fff;background:rgba(255,255,255,.1)}
+
+/* ── SKELETONS ── */
+.skeleton{background:var(--card);padding:2.5rem;border-radius:3.5rem;border:1px solid var(--border)}
+.skel-line{height:1rem;background:rgba(255,255,255,.05);border-radius:1rem;margin-bottom:.75rem;animation:pulse 1.5s ease-in-out infinite}
+.skel-line.wide{width:75%}
+.skel-line.full{width:100%}
+.skel-line.mid{width:83%}
+.skel-line.short{width:67%}
+
+/* ── NEWS CARD ── */
+.news-grid{display:flex;flex-direction:column;gap:2rem}
+.news-card{background:var(--card);padding:2.5rem;border-radius:3.5rem;border:1px solid var(--border);transition:border-color .2s}
+.news-card:hover{border-color:rgba(180,240,78,.2)}
+.news-card.bookmarked{border-color:rgba(180,240,78,.35)}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2rem;gap:1.5rem}
+.card-title{font-size:1.75rem;font-weight:700;line-height:1.1;font-style:italic;letter-spacing:-.03em;font-family:Georgia,serif;flex:1;transition:color .2s}
+.news-card:hover .card-title{color:var(--brand)}
+.card-actions{display:flex;gap:.5rem;flex-shrink:0}
+.btn-bm{padding:.75rem;border-radius:1rem;transition:all .2s;background:rgba(255,255,255,.05);color:var(--muted);display:flex;align-items:center}
+.btn-bm:hover{color:var(--brand)}
+.btn-bm.saved{background:rgba(180,240,78,.15);color:var(--brand)}
+.btn-ext{padding:.75rem;border-radius:1rem;background:rgba(255,255,255,.05);color:var(--muted);display:flex;align-items:center;transition:color .2s}
+.btn-ext:hover{color:var(--brand)}
+.coverage-row{display:flex;align-items:center;gap:.75rem;background:rgba(255,255,255,.04);padding:1rem;border-radius:1rem;border:1px solid var(--border);margin-bottom:2rem;font-size:.875rem;color:#d1d5db;font-style:italic}
+.coverage-row svg{color:var(--muted);flex-shrink:0}
+.coverage-label{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:var(--muted);flex-shrink:0}
+.coverage-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-body{display:grid;grid-template-columns:1fr 1fr;gap:3rem}
+@media(max-width:640px){.card-body{grid-template-columns:1fr}}
+.card-facts{display:flex;flex-direction:column;gap:1rem;font-size:.8125rem;color:#9ca3af}
+.fact-row{display:flex;border-bottom:1px solid var(--border);padding-bottom:.5rem}
+.fact-label{font-weight:700;color:#4b5563;text-transform:uppercase;width:6rem;flex-shrink:0;letter-spacing:.1em;font-size:.5625rem;margin-top:.1rem}
+.fact-val{flex:1;line-height:1.5}
+.card-impact{background:rgba(180,240,78,.04);padding:2rem;border-radius:2.5rem;border:1px solid rgba(180,240,78,.1)}
+.impact-title{font-size:.625rem;font-weight:900;text-transform:uppercase;color:var(--brand);margin-bottom:1rem;letter-spacing:.15em}
+.impact-why{font-size:.875rem;color:#e5e7eb;line-height:1.6;font-style:italic;margin-bottom:1.5rem}
+.impact-cols{display:flex;gap:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border)}
+.impact-col{flex:1}
+.impact-col-label{font-size:.6rem;font-weight:700;color:rgba(180,240,78,.5);text-transform:uppercase;margin-bottom:.25rem;letter-spacing:-.02em}
+.impact-col-val{font-size:.6875rem;font-weight:700;color:#d1d5db;line-height:1.4}
+
+/* ── ERROR ── */
+.error-box{background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);border-radius:3rem;padding:5rem 2rem;text-align:center;margin-bottom:3rem}
+.error-box h2{font-size:1.5rem;font-weight:700;margin:1rem 0 .5rem}
+.error-box p{color:#9ca3af;margin-bottom:1.5rem}
+.btn-retry{background:#fff;color:#000;padding:.75rem 2rem;border-radius:1rem;font-weight:900;text-transform:uppercase;font-size:.75rem;transition:background .2s}
+.btn-retry:hover{background:#e5e7eb}
+
+/* ── SECTION ERROR ── */
+.section-error{background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);border-radius:3rem;padding:2rem;text-align:center}
+.section-error p{color:#9ca3af;font-size:.875rem;margin-top:.75rem}
+
+/* ── PDF PREVIEW ── */
+#preview-header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #e5e7eb;padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 6px rgba(0,0,0,.07)}
+.btn-back{display:flex;align-items:center;gap:.5rem;font-size:.875rem;font-weight:700;color:#4b5563;background:none;transition:color .2s}
+.btn-back:hover{color:#000}
+.btn-save{display:flex;align-items:center;gap:.5rem;background:#000;color:#fff;padding:.75rem 2rem;border-radius:9999px;font-size:.75rem;font-weight:700;transition:background .2s}
+.btn-save:hover{background:#1f2937}
+#preview-scroll{overflow-x:auto;padding:2.5rem 1rem;background:#d1d5db;flex:1;display:flex;justify-content:center}
+#pdf-wrap{background:#fff;font-family:'Montserrat',sans-serif;width:800px;padding:40px;box-shadow:0 20px 60px rgba(0,0,0,.15);border:1px solid #d1d5db;flex-shrink:0}
+.pdf-header{border-bottom:4px solid #000;padding-bottom:1rem;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:flex-end}
+.pdf-title{font-size:28pt;font-weight:700;letter-spacing:-.05em;text-transform:uppercase;line-height:1;margin-bottom:.5rem;color:#000}
+.pdf-subtitle{font-size:10pt;font-weight:300;text-transform:uppercase;letter-spacing:.4em;color:#6b7280}
+.pdf-date{font-size:12pt;font-weight:700;text-transform:uppercase;color:#000;text-align:right}
+.pdf-badge{display:inline-block;background:#000;color:var(--brand);padding:.375rem .75rem;border-radius:.375rem;margin-top:.5rem}
+.pdf-badge p{font-size:9pt;font-weight:700;text-transform:uppercase;letter-spacing:.15em}
+.pdf-city{font-size:8pt;font-weight:300;color:#6b7280;text-transform:uppercase;letter-spacing:.15em;display:block;margin-top:.25rem}
+.pdf-panorama{margin-bottom:2rem;background:#f9fafb;padding:1.5rem;border-radius:.5rem;border:1px solid #e5e7eb}
+.pdf-section-title{font-size:13pt;font-weight:700;text-transform:uppercase;border-bottom:1px solid #d1d5db;padding-bottom:.5rem;margin-bottom:1rem;letter-spacing:-.02em;color:#111827}
+.pdf-panorama-item{font-size:11pt;font-weight:300;line-height:1.6;display:flex;gap:.75rem;color:#1f2937;margin-bottom:.75rem}
+.pdf-panorama-bullet{font-weight:700;font-size:12pt;color:#000;flex-shrink:0}
+.pdf-lvl{margin-bottom:2.5rem}
+.pdf-lvl-header{border-bottom:2px solid #000;padding-bottom:.5rem;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:flex-end}
+.pdf-lvl-name{font-size:16pt;font-weight:700;text-transform:uppercase;letter-spacing:-.05em;color:#000}
+.pdf-lvl-count{font-size:10pt;font-weight:300;color:#6b7280;font-style:italic;text-transform:uppercase;letter-spacing:.1em}
+.pdf-note{border-left:4px solid #e5e7eb;padding-left:1.5rem;margin-bottom:2rem}
+.pdf-note-title{font-size:13pt;font-weight:700;margin-bottom:1rem;line-height:1.3;letter-spacing:-.02em;color:#000}
+.pdf-fact-grid{display:grid;grid-template-columns:80px 1fr;gap:.25rem 1rem;font-size:10.5pt;font-weight:300;color:#1f2937;margin-bottom:1rem}
+.pdf-fact-label{font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.15em;font-size:9pt}
+.pdf-source{color:#1d4ed8;font-weight:700;word-break:break-all}
+.pdf-coverage{display:flex;align-items:center;gap:.5rem;background:#f3f4f6;padding:.625rem;border-radius:.375rem;border:1px solid #e5e7eb;margin-bottom:1rem;font-size:9pt;color:#374151;font-style:italic}
+.pdf-coverage-label{font-weight:700;font-size:8pt;color:#4b5563;text-transform:uppercase;letter-spacing:.15em;flex-shrink:0;font-style:normal}
+.pdf-analysis{background:#f9fafb;padding:1.25rem;border-radius:.5rem;border:1px solid #f3f4f6}
+.pdf-analysis-title{font-size:10pt;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#111827;border-bottom:1px solid #e5e7eb;padding-bottom:.25rem;margin-bottom:.5rem}
+.pdf-why{font-size:10.5pt;font-weight:300;line-height:1.6;font-style:italic;color:#374151;margin-bottom:1rem}
+.pdf-impact-cols{display:flex;gap:1.5rem;padding-top:.75rem;border-top:1px solid #e5e7eb}
+.pdf-impact-col{flex:1}
+.pdf-impact-label{font-weight:700;color:#4b5563;text-transform:uppercase;font-size:8pt;letter-spacing:.15em;margin-bottom:.25rem}
+.pdf-impact-val{font-size:9pt;font-weight:300;line-height:1.4;color:#111827}
+
+/* ── EXPORTING OVERLAY ── */
+#exporting-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.95);display:none;flex-direction:column;align-items:center;justify-content:center}
+#exporting-overlay.show{display:flex}
+.exp-title{font-size:1.5rem;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#fff;margin-top:1.5rem}
+.exp-sub{color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.2em;margin-top:.5rem}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin 1s linear infinite}
+.fade-in{animation:fadeUp .5s ease forwards}
+
+/* ── SVG ICONS ── */
+svg{display:block}
+</style>
+</head>
+<body>
+
+<!-- ══════════ EXPORTING OVERLAY ══════════ -->
+<div id="exporting-overlay">
+  <svg class="spin" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#B4F04E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+  <p class="exp-title">Compilando Documento</p>
+  <p class="exp-sub">Calibrando márgenes…</p>
+</div>
+
+<!-- ══════════ LANDING ══════════ -->
+<div id="view-landing" class="active">
+  <div class="landing-glow"></div>
+  <div class="landing-inner">
+    <div class="logo-box">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="#000" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    </div>
+    <h1 class="hero">Buenos días.</h1>
+    <p class="hero-sub">Sistema de Inteligencia Informativa. Todas las secciones se cargan <strong>en paralelo</strong>.</p>
+    <div id="cache-banner" class="cache-banner" style="display:none">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B4F04E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <span>Reporte de hace <strong id="cache-age"></strong> min disponible.</span>
+      <button onclick="loadFromCache()" style="background:var(--brand);color:#000;padding:.5rem 1.25rem;border-radius:1rem;font-size:.7rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase">Cargar</button>
+    </div>
+    <button class="btn-start" onclick="startAnalysis()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#000" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Iniciar Análisis
+    </button>
+  </div>
+</div>
+
+<!-- ══════════ TERMINAL ══════════ -->
+<div id="view-terminal">
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="header-logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#000" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">CRITERIO 10H</div>
+        <div class="brand-sub">Intelligence Hub</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="search-input" type="text" placeholder="Buscar…" oninput="onSearch(this.value)"/>
+      </div>
+      <button class="btn-icon" onclick="startAnalysis()" title="Reiniciar">
+        <svg id="refresh-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+      </button>
+      <button id="btn-preview-nav" class="btn-preview disabled" onclick="goPreview()">
+        Vista Previa PDF
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Progress -->
+  <div id="progress-area" style="display:none">
+    <div class="prog-label">
+      <span id="prog-msg" style="display:flex;align-items:center;gap:.5rem">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Analizando en paralelo…
+      </span>
+      <span id="prog-pct">0%</span>
+    </div>
+    <div class="prog-track"><div class="prog-bar" id="prog-bar"></div></div>
+    <div class="status-grid" id="status-grid"></div>
+  </div>
+
+  <!-- Main -->
+  <main id="main-content">
+    <div id="error-box" class="error-box" style="display:none">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <h2>Error de Sistema</h2>
+      <p id="error-msg"></p>
+      <button class="btn-retry" id="error-btn" onclick="startAnalysis()">Reintentar</button>
+    </div>
+    <div id="content-area" style="display:none">
+      <section id="panorama-section" class="panorama-section" style="display:none">
+        <h2 class="section-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Panorama de Hoy
+        </h2>
+        <div class="panorama-grid" id="panorama-grid"></div>
+      </section>
+      <div id="bookmarks-section">
+        <h2 class="bookmarks-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/><path d="M9 10l2 2 4-4"/></svg>
+          <span id="bm-count">Guardadas (0)</span>
+        </h2>
+        <div class="bookmark-list" id="bookmark-list"></div>
+      </div>
+      <div id="tabs-bar"></div>
+      <div id="sections-container"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ══════════ PREVIEW ══════════ -->
+<div id="view-preview">
+  <header id="preview-header">
+    <button class="btn-back" onclick="showView('terminal')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+      Volver
+    </button>
+    <button class="btn-save" onclick="exportPDF()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Guardar PDF
+    </button>
+  </header>
+  <div id="preview-scroll">
+    <div id="pdf-wrap"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════
+const API_KEY     = "AIzaSyDvvkLTuONGNK1dfU33w2gEsmrp-W39i6g";
+const MODEL       = "gemini-2.5-flash";
+const CACHE_TTL   = 60 * 60 * 1000;
+const CACHE_KEY   = () => `criterio10h_${new Date().toISOString().slice(0,10)}`;
+
+const LEVELS = [
+  { id:'global',     name:'Global',        target:5,  color:'#B4F04E', bg:'bg-green' },
+  { id:'latam',      name:'LATAM',         target:5,  color:'#C2E9FB', bg:'bg-blue'  },
+  { id:'mexico',     name:'México',        target:5,  color:'#FFD1E6', bg:'bg-pink'  },
+  { id:'coahuila',   name:'Coahuila',      target:5,  color:'#D6C6FB', bg:'bg-purple'},
+  { id:'saltillo',   name:'Saltillo y ZM', target:10, color:'#B4F04E', bg:'bg-green' },
+  { id:'hyperlocal', name:'Híper-local',   target:5,  color:'#C2E9FB', bg:'bg-blue'  },
+];
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let state = {
+  briefing:   { panorama: [], secciones: {} },
+  status:     {},   // id → 'idle'|'loading'|'done'|'error'
+  panStatus:  'idle',
+  isComplete: false,
+  reportTime: '',
+  query:      '',
+  bookmarks:  new Set(),
+  activeTab:  'all',
+  aborted:    false,
+};
+
+// ═══════════════════════════════════════════════════════════
+// CACHE
+// ═══════════════════════════════════════════════════════════
+function saveCache(data) {
+  try { localStorage.setItem(CACHE_KEY(), JSON.stringify({ ts: Date.now(), data })); } catch {}
+}
+function loadCacheRaw() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY());
+    if (!raw) return null;
+    const { ts, data } = JSON.parse(raw);
+    if (Date.now() - ts < CACHE_TTL) return { data, age: Math.round((Date.now()-ts)/60000) };
+  } catch {}
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+(function init() {
+  const cached = loadCacheRaw();
+  if (cached) {
+    document.getElementById('cache-age').textContent = cached.age;
+    document.getElementById('cache-banner').style.display = 'flex';
+    window._cachedBrief = cached.data;
+  }
+})();
+
+function loadFromCache() {
+  if (!window._cachedBrief) return;
+  state.briefing   = window._cachedBrief;
+  state.isComplete = true;
+  state.reportTime = new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:true});
+  LEVELS.forEach(l => state.status[l.id] = 'done');
+  state.panStatus = 'done';
+  showView('terminal');
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════════════════
+// VIEWS
+// ═══════════════════════════════════════════════════════════
+function showView(name) {
+  ['landing','terminal','preview'].forEach(v => {
+    document.getElementById('view-'+v).classList.toggle('active', v === name);
+  });
+}
+function goPreview() {
+  if (!state.isComplete) return;
+  buildPDF();
+  showView('preview');
+}
+
+// ═══════════════════════════════════════════════════════════
+// API
+// ═══════════════════════════════════════════════════════════
+async function callGemini(prompt, retries=3) {
+  let last;
+  for (let i=0; i<retries; i++) {
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`,
+        { method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            contents:[{parts:[{text:prompt}]}],
+            tools:[{google_search:{}}],
+            generationConfig:{ maxOutputTokens:8192, temperature:0.3 }
+          })
+        }
+      );
+      if (res.status===401||res.status===403) throw Object.assign(new Error('401'),{is401:true});
+      if (!res.ok) throw new Error('HTTP '+res.status);
+      const json = await res.json();
+      if (!json.candidates?.[0]?.content) throw new Error('empty');
+      // Extraer JSON del texto (puede venir con markdown ```json ... ```)
+      let text = json.candidates[0].content.parts
+        .filter(p => p.text).map(p => p.text).join('');
+      const match = text.match(/```(?:json)?\s*([\s\S]*?)```/) || text.match(/(\[[\s\S]*\]|\{[\s\S]*\})/);
+      if (match) text = match[1];
+      return JSON.parse(text.trim());
+    } catch(e) {
+      last = e;
+      if (e.is401) break;
+      await new Promise(r=>setTimeout(r, 1500*(i+1)));
+    }
+  }
+  throw last;
+}
+
+const SEG_SCHEMA = {
+  type:"ARRAY", items:{ type:"OBJECT", properties:{
+    titular:{type:"STRING"}, who:{type:"STRING"}, what:{type:"STRING"},
+    when:{type:"STRING"}, where:{type:"STRING"}, why:{type:"STRING"},
+    porQueImporta:{type:"STRING"}, fuente:{type:"STRING"}, otrosMedios:{type:"STRING"},
+    implicaciones:{ type:"OBJECT", properties:{ inmediatas:{type:"STRING"}, largoPlazo:{type:"STRING"} }}
+  }}
+};
+const PAN_SCHEMA = { type:"OBJECT", properties:{ panorama:{type:"ARRAY",items:{type:"STRING"}} } };
+
+async function fetchPanorama() {
+  state.panStatus = 'loading';
+  try {
+    const r = await callGemini(
+      `Busca y genera exactamente 5 puntos clave del panorama informativo de las últimas 10 horas, de lo más reciente a lo más antiguo. Sé concreto, menciona protagonistas reales.
+Responde ÚNICAMENTE con un objeto JSON válido, sin markdown, sin explicaciones:
+{"panorama":["punto1","punto2","punto3","punto4","punto5"]}`
+    );
+    if (!state.aborted) {
+      state.briefing.panorama = r.panorama||[];
+      state.panStatus = 'done';
+      renderPanorama();
+      updateProgress();
+    }
+  } catch {
+    if (!state.aborted) { state.panStatus='error'; updateProgress(); }
+  }
+}
+
+async function fetchLevel(lvl) {
+  state.status[lvl.id] = 'loading';
+  updateStatusGrid();
+  const hyper = lvl.id==='hyperlocal'
+    ? '\nREGLA HÍPER-LOCAL ESTRICTA: Solo noticias de SALTILLO. Cita al menos 5 medios distintos.'
+    : '';
+  const prompt = `Actúa como editor senior. Busca exactamente ${lvl.target} noticias de las ÚLTIMAS 10 HORAS para la categoría: ${lvl.name}.${hyper}
+REGLAS: 1) Orden más reciente primero. 2) fuente=URL exacta. 3) otrosMedios=otros portales. 4) Sin campos vacíos.
+
+Responde ÚNICAMENTE con un array JSON válido, sin markdown, sin explicaciones adicionales:
+[{"titular":"...","who":"...","what":"...","when":"...","where":"...","why":"...","porQueImporta":"...","fuente":"https://...","otrosMedios":"...","implicaciones":{"inmediatas":"...","largoPlazo":"..."}}]`;
+  try {
+    const data = await callGemini(prompt);
+    if (!state.aborted) {
+      state.briefing.secciones[lvl.id] = data;
+      state.status[lvl.id] = 'done';
+      renderSection(lvl);
+      updateProgress();
+      updateStatusGrid();
+    }
+  } catch {
+    if (!state.aborted) {
+      state.status[lvl.id] = 'error';
+      renderSection(lvl);
+      updateProgress();
+      updateStatusGrid();
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// MAIN FLOW
+// ═══════════════════════════════════════════════════════════
+async function startAnalysis() {
+  state.aborted    = false;
+  state.isComplete = false;
+  state.briefing   = { panorama:[], secciones:{} };
+  state.status     = Object.fromEntries(LEVELS.map(l=>[l.id,'idle']));
+  state.panStatus  = 'idle';
+  state.query      = '';
+  state.bookmarks  = new Set();
+  document.getElementById('search-input').value = '';
+
+  showView('terminal');
+  document.getElementById('error-box').style.display  = 'none';
+  document.getElementById('content-area').style.display = 'block';
+  document.getElementById('progress-area').style.display = 'block';
+  document.getElementById('btn-preview-nav').className = 'btn-preview disabled';
+
+  initStatusGrid();
+  initSectionsContainer();
+  renderTabs();
+  updateProgress();
+
+  try {
+    await Promise.all([
+      fetchPanorama(),
+      ...LEVELS.map(lvl => fetchLevel(lvl))
+    ]);
+    if (!state.aborted) {
+      state.isComplete = true;
+      state.reportTime = new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:true});
+      saveCache(state.briefing);
+      document.getElementById('btn-preview-nav').className = 'btn-preview ready';
+      document.getElementById('progress-area').style.display = 'none';
+    }
+  } catch(e) {
+    const msg = e?.is401 ? 'Error 401: Sesión expirada. Recarga la página.' : 'Error de conexión. Verifica tu API key.';
+    showError(msg);
+  }
+}
+
+function showError(msg) {
+  document.getElementById('error-msg').textContent = msg;
+  document.getElementById('error-box').style.display = 'block';
+}
+
+// ═══════════════════════════════════════════════════════════
+// PROGRESS
+// ═══════════════════════════════════════════════════════════
+function updateProgress() {
+  const total = LEVELS.length + 1;
+  const done  = (state.panStatus==='done'?1:0) + LEVELS.filter(l=>state.status[l.id]==='done'||state.status[l.id]==='error').length;
+  const pct   = Math.round(done/total*100);
+  document.getElementById('prog-bar').style.width = pct+'%';
+  document.getElementById('prog-pct').textContent  = pct+'%';
+}
+
+// ═══════════════════════════════════════════════════════════
+// STATUS GRID
+// ═══════════════════════════════════════════════════════════
+function initStatusGrid() {
+  const g = document.getElementById('status-grid');
+  g.innerHTML = LEVELS.map(l=>`
+    <div class="status-item" id="si-${l.id}">
+      <span class="status-name">${l.name}</span>
+      <span class="status-tag loading" id="st-${l.id}">
+        <svg class="spin" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        Cargando
+      </span>
+    </div>`).join('');
+}
+function updateStatusGrid() {
+  LEVELS.forEach(l => {
+    const el = document.getElementById('st-'+l.id);
+    if (!el) return;
+    const s = state.status[l.id];
+    el.className = 'status-tag '+(s||'loading');
+    if (s==='done')    el.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg> Listo`;
+    else if (s==='error') el.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg> Error`;
+    else el.innerHTML = `<svg class="spin" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Cargando`;
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════════
+function renderTabs() {
+  const bar = document.getElementById('tabs-bar');
+  bar.innerHTML = `<button class="tab-btn ${state.activeTab==='all'?'active':''}" onclick="setTab('all')">Todo</button>`
+    + LEVELS.map(l=>`<button class="tab-btn ${state.activeTab===l.id?'active':''}" onclick="setTab('${l.id}')" id="tab-${l.id}" style="${state.activeTab===l.id?`background:${l.color};color:#000`:''}">${l.name}</button>`).join('');
+}
+function setTab(id) {
+  state.activeTab = id;
+  renderTabs();
+  document.querySelectorAll('.news-section').forEach(s => {
+    s.style.display = (id==='all' || s.dataset.id===id) ? '' : 'none';
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// SECTIONS CONTAINER
+// ═══════════════════════════════════════════════════════════
+function initSectionsContainer() {
+  const c = document.getElementById('sections-container');
+  c.innerHTML = LEVELS.map(l=>`
+    <div class="news-section" data-id="${l.id}" id="sec-${l.id}">
+      <div class="news-section-header">
+        <div class="section-icon" style="background:${l.color}">
+          ${levelIcon(l.id)}
+        </div>
+        <h3 class="news-section-title">${l.name}</h3>
+        <span id="sec-status-${l.id}"></span>
+        <button id="sec-retry-${l.id}" class="section-retry" style="display:none" onclick="retrySection('${l.id}')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+          Reintentar
+        </button>
+      </div>
+      <div id="sec-body-${l.id}">
+        <div class="news-grid">
+          <div class="skeleton"><div class="skel-line wide"></div><div class="skel-line full"></div><div class="skel-line mid"></div><div class="skel-line short"></div></div>
+          <div class="skeleton"><div class="skel-line wide"></div><div class="skel-line full"></div><div class="skel-line mid"></div></div>
+        </div>
+      </div>
+    </div>`).join('');
+  document.getElementById('panorama-section').style.display = 'none';
+  document.getElementById('content-area').style.display = 'block';
+}
+
+function levelIcon(id) {
+  const icons = {
+    global:     `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+    latam:      `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16"/><path d="M16 6v16"/></svg>`,
+    mexico:     `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>`,
+    coahuila:   `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3l4 8 5-5 5 15H2L8 3z"/></svg>`,
+    saltillo:   `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>`,
+    hyperlocal: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>`,
+  };
+  return icons[id]||icons.global;
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER PANORAMA
+// ═══════════════════════════════════════════════════════════
+function renderPanorama() {
+  const sec  = document.getElementById('panorama-section');
+  const grid = document.getElementById('panorama-grid');
+  sec.style.display = 'block';
+  grid.innerHTML = state.briefing.panorama.map(p=>`
+    <div class="panorama-item fade-in">
+      <div class="panorama-dot"></div>
+      <p>${safe(p)}</p>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER SECTION
+// ═══════════════════════════════════════════════════════════
+function renderSection(lvl) {
+  const body    = document.getElementById('sec-body-'+lvl.id);
+  const retryEl = document.getElementById('sec-retry-'+lvl.id);
+  const status  = state.status[lvl.id];
+
+  if (status==='error') {
+    retryEl.style.display = 'flex';
+    body.innerHTML = `<div class="section-error">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <p>No se pudo obtener esta sección.</p></div>`;
+    return;
+  }
+
+  retryEl.style.display = 'none';
+  const items = (state.briefing.secciones[lvl.id]||[]).filter(n=>matchQ(n));
+  if (!items.length) { body.innerHTML=''; return; }
+
+  body.innerHTML = `<div class="news-grid">${items.map((n,i)=>cardHTML(n,lvl.id,i)).join('')}</div>`;
+
+  // Attach bookmark listeners
+  body.querySelectorAll('[data-bm]').forEach(btn => {
+    btn.addEventListener('click', () => toggleBookmark(btn.dataset.bm, btn.dataset.title));
+  });
+  updateBookmarkButtons();
+}
+
+function retrySection(id) {
+  const lvl = LEVELS.find(l=>l.id===id);
+  if (lvl) fetchLevel(lvl);
+}
+
+// ═══════════════════════════════════════════════════════════
+// CARD HTML
+// ═══════════════════════════════════════════════════════════
+function cardHTML(note, lvlId, idx) {
+  const key    = `${lvlId}-${idx}`;
+  const saved  = state.bookmarks.has(key);
+  const fuente = safe(note.fuente);
+  return `
+  <div class="news-card ${saved?'bookmarked':''}" id="card-${key}">
+    <div class="card-top">
+      <h4 class="card-title">${safe(note.titular)}</h4>
+      <div class="card-actions">
+        <button class="btn-bm ${saved?'saved':''}" data-bm="${key}" data-title="${safe(note.titular).replace(/"/g,'&quot;')}" title="${saved?'Quitar guardado':'Guardar'}">
+          ${saved
+            ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/><path d="M9 10l2 2 4-4"/></svg>`
+            : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`
+          }
+        </button>
+        ${fuente!=='Información en desarrollo…'?`<a href="${fuente}" target="_blank" rel="noreferrer" class="btn-ext"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>`:''}
+      </div>
+    </div>
+    <div class="coverage-row">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
+      <span class="coverage-label">Cobertura:</span>
+      <span class="coverage-text">${safe(note.otrosMedios)}</span>
+    </div>
+    <div class="card-body">
+      <div class="card-facts">
+        ${[['QUIÉN',note.who],['QUÉ',note.what],['DÓNDE',note.where],['CONTEXTO',note.why]].map(([l,v])=>`
+          <div class="fact-row"><span class="fact-label">${l}:</span><span class="fact-val">${safe(v)}</span></div>`).join('')}
+      </div>
+      <div class="card-impact">
+        <div class="impact-title">Impacto</div>
+        <div class="impact-why">${safe(note.porQueImporta)}</div>
+        <div class="impact-cols">
+          <div class="impact-col">
+            <div class="impact-col-label">Inmediato</div>
+            <div class="impact-col-val">${safe(note.implicaciones?.inmediatas)}</div>
+          </div>
+          <div class="impact-col">
+            <div class="impact-col-label">Largo Plazo</div>
+            <div class="impact-col-val">${safe(note.implicaciones?.largoPlazo)}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// BOOKMARKS
+// ═══════════════════════════════════════════════════════════
+function toggleBookmark(key, title) {
+  if (state.bookmarks.has(key)) state.bookmarks.delete(key);
+  else state.bookmarks.add(key);
+  updateBookmarkButtons();
+  renderBookmarkPanel();
+  // Update card border
+  const card = document.getElementById('card-'+key);
+  if (card) card.classList.toggle('bookmarked', state.bookmarks.has(key));
+}
+function updateBookmarkButtons() {
+  document.querySelectorAll('[data-bm]').forEach(btn => {
+    const key = btn.dataset.bm;
+    const saved = state.bookmarks.has(key);
+    btn.className = 'btn-bm '+(saved?'saved':'');
+    btn.innerHTML = saved
+      ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/><path d="M9 10l2 2 4-4"/></svg>`
+      : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`;
+  });
+}
+function renderBookmarkPanel() {
+  const sec  = document.getElementById('bookmarks-section');
+  const list = document.getElementById('bookmark-list');
+  const bms  = [...state.bookmarks];
+  if (!bms.length) { sec.classList.remove('has-items'); return; }
+  sec.classList.add('has-items');
+  document.getElementById('bm-count').textContent = `Guardadas (${bms.length})`;
+  list.innerHTML = bms.map(key => {
+    const [lvlId, idx] = key.split('-');
+    const note = state.briefing.secciones[lvlId]?.[idx];
+    if (!note) return '';
+    return `<div class="bookmark-row">
+      <span>${safe(note.titular)}</span>
+      <button class="bm-remove" onclick="toggleBookmark('${key}')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// SEARCH
+// ═══════════════════════════════════════════════════════════
+function onSearch(val) {
+  state.query = val;
+  LEVELS.forEach(lvl => {
+    if (state.status[lvl.id]==='done') renderSection(lvl);
+  });
+}
+function matchQ(note) {
+  if (!state.query.trim()) return true;
+  const q = state.query.toLowerCase();
+  return [note.titular,note.who,note.what,note.where,note.porQueImporta]
+    .some(f=>safe(f).toLowerCase().includes(q));
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER ALL (from cache)
+// ═══════════════════════════════════════════════════════════
+function renderAll() {
+  document.getElementById('error-box').style.display  = 'none';
+  document.getElementById('content-area').style.display = 'block';
+  document.getElementById('progress-area').style.display = 'none';
+  document.getElementById('btn-preview-nav').className = 'btn-preview ready';
+  initSectionsContainer();
+  renderTabs();
+  renderPanorama();
+  LEVELS.forEach(lvl => renderSection(lvl));
+}
+
+// ═══════════════════════════════════════════════════════════
+// PDF BUILD
+// ═══════════════════════════════════════════════════════════
+function buildPDF() {
+  const wrap = document.getElementById('pdf-wrap');
+  const b = state.briefing;
+  const dateStr = new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
+
+  let html = `
+  <div class="pdf-header">
+    <div>
+      <div class="pdf-title">Criterio 10H</div>
+      <div class="pdf-subtitle">Reporte Ejecutivo de Inteligencia</div>
+    </div>
+    <div style="text-align:right">
+      <div class="pdf-date">${dateStr}</div>
+      <div class="pdf-badge"><p>Hora de Corte: ${state.reportTime}</p></div>
+      <span class="pdf-city">Saltillo • México</span>
+    </div>
+  </div>`;
+
+  if (b.panorama?.length) {
+    html += `<div class="pdf-panorama">
+      <div class="pdf-section-title">Panorama General</div>
+      ${b.panorama.map(p=>`<div class="pdf-panorama-item"><span class="pdf-panorama-bullet">•</span>${safe(p)}</div>`).join('')}
+    </div>`;
+  }
+
+  LEVELS.forEach(lvl => {
+    const items = b.secciones[lvl.id]||[];
+    if (!items.length) return;
+    html += `<div class="pdf-lvl">
+      <div class="pdf-lvl-header">
+        <span class="pdf-lvl-name">${lvl.name}</span>
+        <span class="pdf-lvl-count">${items.length} Reportes</span>
+      </div>
+      ${items.map(n=>`
+      <div class="pdf-note">
+        <div class="pdf-note-title">${safe(n.titular)}</div>
+        <div class="pdf-fact-grid">
+          <span class="pdf-fact-label">Quién:</span><span>${safe(n.who)}</span>
+          <span class="pdf-fact-label">Qué:</span><span>${safe(n.what)}</span>
+          <span class="pdf-fact-label">Fuente:</span><span class="pdf-source">${safe(n.fuente)}</span>
+        </div>
+        <div class="pdf-coverage">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49"/></svg>
+          <span class="pdf-coverage-label">Otros medios:</span> ${safe(n.otrosMedios)}
+        </div>
+        <div class="pdf-analysis">
+          <div class="pdf-analysis-title">Análisis e Impacto</div>
+          <div class="pdf-why">${safe(n.porQueImporta)}</div>
+          <div class="pdf-impact-cols">
+            <div class="pdf-impact-col">
+              <div class="pdf-impact-label">Impacto Inmediato</div>
+              <div class="pdf-impact-val">${safe(n.implicaciones?.inmediatas)}</div>
+            </div>
+            <div class="pdf-impact-col">
+              <div class="pdf-impact-label">Largo Plazo</div>
+              <div class="pdf-impact-val">${safe(n.implicaciones?.largoPlazo)}</div>
+            </div>
+          </div>
+        </div>
+      </div>`).join('')}
+    </div>`;
+  });
+
+  wrap.innerHTML = html;
+}
+
+function exportPDF() {
+  const overlay = document.getElementById('exporting-overlay');
+  overlay.classList.add('show');
+  const run = () => setTimeout(()=>{
+    window.scrollTo(0,0);
+    const el = document.getElementById('pdf-wrap');
+    window.html2pdf().set({
+      margin:0,
+      filename:`Criterio10H_${new Date().toISOString().slice(0,10)}.pdf`,
+      image:{type:'jpeg',quality:0.98},
+      html2canvas:{scale:2,useCORS:true,x:0,y:0,scrollX:0,scrollY:0,windowWidth:800},
+      jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+      pagebreak:{mode:['css','legacy']}
+    }).from(el).save().then(()=>overlay.classList.remove('show'))
+      .catch(()=>{alert('Error al generar PDF.');overlay.classList.remove('show');});
+  },400);
+  if (typeof window.html2pdf!=='undefined') { run(); }
+  else {
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+    s.onload=run; document.head.appendChild(s);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════
+function safe(val) {
+  if (!val||val==='undefined'||val==='null') return 'Información en desarrollo…';
+  if (typeof val==='object') return Array.isArray(val)?val.join(', '):JSON.stringify(val);
+  // Escape HTML
+  return String(val).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
